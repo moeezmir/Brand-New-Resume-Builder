@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Resume Builder</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <!-- PDF Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+<!-- What's New Modal -->
+<div id="whatsNewModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeWhatsNew()">&times;</span>
+    <h2>✨ What's New</h2>
+    <p class="intro">Here are the latest updates to your Resume Builder:</p>
+    <ul class="features">
+      <li>🎨 <strong>Insert pictures</strong> — align and format them as you like</li>
+      <li>🌐 <strong>Languages support</strong> — English, Urdu, Hindi, French</li>
+      <li>📂 <strong>Showcase your projects</strong> — easily add and highlight your work</li>
+      <li>📄 <strong>Improved PDF export</strong> — cleaner print styles</li>
+    </ul>
+    <button class="cta-btn" onclick="closeWhatsNew()">Got it!</button>
+  </div>
+</div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="header-controls">
+            <select id="lang-select" onchange="changeLanguage()">
+                <option value="en">English</option>
+                <option value="hi">हिंदी</option>
+                <option value="ur">اردو</option>
+                <option value="fr">Français</option>
+            </select>
+            <select id="template-select" onchange="changeTemplate()">
+                <option value="template-default">Modern</option>
+                <option value="template-minimal">Minimal</option>
+                <option value="template-classic">Classic</option>
+            </select>
+            <button id="theme-toggle" onclick="toggleTheme()">
+                <i class="fas fa-moon"></i> Dark Mode
+            </button>
+
+        </div>
+
+        <!-- Photo Controls -->
+        <div class="image-controls">
+            <label style="display: block; margin-bottom: 12px; font-weight: 600; font-size: 15px;">
+                <i class="fas fa-image"></i> <span id="photo-help-label">Photo Settings</span>
+            </label>
+            <input type="file" id="image-input" accept="image/*" onchange="handleImageUpload(event)">
+            <img id="image-preview" alt="Preview">
+
+            <div class="control-row">
+                <span class="control-label" id="size-label">Size:</span>
+                <input type="range" id="photo-size" min="60" max="150" value="100" onchange="updatePhotoSize()">
+                <span id="size-display">100×120px</span>
+            </div>
+
+            <div class="control-row">
+                <span class="control-label" id="position-label">Position:</span>
+                <select id="photo-position" onchange="updatePhotoPosition()">
+                    <option value="top-left">Top Left</option>
+                    <option value="top-center">Top Center</option>
+                    <option value="top-right">Top Right</option>
+                </select>
+            </div>
+
+            <div class="control-row">
+                <span class="control-label" id="frame-label">Frame:</span>
+                <select id="photo-frame" onchange="updatePhotoFrame()">
+                    <option value="rectangle">Rectangle</option>
+                    <option value="circle">Circle</option>
+                    <option value="ellipse">Ellipse</option>
+                    <option value="square">Square</option>
+                </select>
+            </div>
+
+            <button class="secondary danger" onclick="clearImage()" id="clear-img-btn"
+                style="display:none; width: 100%;">
+                <i class="fas fa-trash"></i> <span id="remove-photo-span">Remove Photo</span>
+            </button>
+        </div>
+
+        <button onclick="generatePDF()" style="width: 100%; padding: 14px; font-size: 16px; margin-bottom: 24px;">
+            <i class="fas fa-file-pdf"></i> Download PDF
+        </button>
+
+        <!-- Sections -->
+        <div class="section">
+            <h3><i class="fas fa-user"></i> <span id="personal-label">Personal</span></h3>
+            <input type="text" id="name" placeholder="Full Name" oninput="updateField('name', this.value)">
+            <input type="text" id="title" placeholder="Job Title" oninput="updateField('title', this.value)">
+            <input type="email" id="email" placeholder="Email" oninput="updateField('email', this.value)">
+            <input type="tel" id="phone" placeholder="Phone" oninput="updateField('phone', this.value)">
+            <textarea id="address" placeholder="Address" rows="2"
+                oninput="updateField('address', this.value)"></textarea>
+        </div>
+
+        <div class="section">
+            <h3><i class="fas fa-briefcase"></i> <span id="experience-label">Experience</span></h3>
+            <div id="experience-list"></div>
+            <button class="secondary" onclick="addItem('experience')" style="width: 100%;"><i class="fas fa-plus"></i>
+                <span id="add-exp-btn">Add</span></button>
+        </div>
+
+        <div class="section">
+            <h3><i class="fas fa-graduation-cap"></i> <span id="education-label">Education</span></h3>
+            <div id="education-list"></div>
+            <button class="secondary" onclick="addItem('education')" style="width: 100%;"><i class="fas fa-plus"></i>
+                <span id="add-edu-btn">Add</span></button>
+        </div>
+
+        <div class="section">
+            <h3><i class="fas fa-language"></i> <span id="languages-label">Languages</span></h3>
+            <div id="language-list"></div>
+            <button class="secondary" onclick="addItem('language')" style="width: 100%;"><i class="fas fa-plus"></i>
+                <span id="add-lang-btn">Add</span></button>
+        </div>
+
+        <div class="section">
+            <h3><i class="fas fa-project-diagram"></i> <span id="projects-label">Projects</span></h3>
+            <div id="project-list"></div>
+            <button class="secondary" onclick="addItem('project')" style="width: 100%;"><i class="fas fa-plus"></i>
+                <span id="add-proj-btn">Add</span></button>
+        </div>
+    </aside>
+
+    <main class="preview-container">
+        <div id="resume-preview" class="template-default">
+            <img id="preview-image" class="photo-top-center frame-rectangle" src="" alt="" style="display:none;">
+            <header>
+                <h1 id="p-name">Your Name</h1>
+                <div class="job-title" id="p-title">Job Title</div>
+                <div class="contact-info">
+                    <span id="p-email">-</span>
+                    <span id="p-phone">-</span>
+                    <span id="p-address">-</span>
+                </div>
+            </header>
+            <section>
+                <h2 id="p-exp-header">Experience</h2>
+                <div id="p-experience-container"></div>
+            </section>
+            <section>
+                <h2 id="p-edu-header">Education</h2>
+                <div id="p-education-container"></div>
+            </section>
+            <section>
+                <h2 id="p-lang-header">Languages</h2>
+                <div id="p-language-container"></div>
+            </section>
+            <section>
+                <h2 id="p-project-header">Projects</h2>
+                <div id="p-project-container"></div>
+            </section>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
